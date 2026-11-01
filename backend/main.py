@@ -1,38 +1,42 @@
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
 from app.separation.service import separate_audio
 
+
 app = FastAPI(
-title="VocalSplit AI Backend",
-description="AI-powered audio source separation service",
-version="1.0.0"
+    title="VocalSplit AI Backend",
+    description="AI-powered audio source separation service",
+    version="1.0.0"
 )
 
+
 app.add_middleware(
-CORSMiddleware,
-allow_origins=["http://localhost:5173"],
-allow_credentials=False,
-allow_methods=["GET", "POST"],
-allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
+
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "temp"
 
 SUPPORTED_FORMATS = {
-".wav",
-".mp3",
-".flac",
-".aac",
-".m4a",
+    ".wav",
+    ".mp3",
+    ".flac",
+    ".aac",
+    ".m4a",
 }
 
 MAX_FILE_SIZE = 100 * 1024 * 1024
+
 
 @app.get("/")
 async def root():
@@ -52,7 +56,12 @@ async def health_check():
 
 
 @app.post("/api/separate")
-async def separate(file: UploadFile = File(...)):
+async def separate(
+    file: UploadFile = File(...),
+    output_directory: str = Form(...)
+):
+
+    # Validate audio format
     extension = Path(file.filename or "").suffix.lower()
 
     if extension not in SUPPORTED_FORMATS:
@@ -61,16 +70,31 @@ async def separate(file: UploadFile = File(...)):
             detail="Unsupported audio format."
         )
 
+    # Validate output directory
+    destination = Path(output_directory)
+
+    if not destination.is_absolute() or not destination.is_dir():
+        raise HTTPException(
+            status_code=400,
+            detail="Selected output directory does not exist or is invalid."
+        )
+
+    # Create temporary directory
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
     job_id = str(uuid4())
+
     input_path = TEMP_DIR / f"{job_id}{extension}"
 
     try:
+
+        # Save uploaded audio temporarily
         file_size = 0
 
         with input_path.open("wb") as audio_file:
+
             while chunk := await file.read(1024 * 1024):
+
                 file_size += len(chunk)
 
                 if file_size > MAX_FILE_SIZE:
@@ -81,9 +105,11 @@ async def separate(file: UploadFile = File(...)):
 
                 audio_file.write(chunk)
 
+        # Run AI separation
         result = await run_in_threadpool(
             separate_audio,
-            input_path
+            input_path,
+            destination
         )
 
         return {
@@ -96,12 +122,16 @@ async def separate(file: UploadFile = File(...)):
         raise
 
     except Exception as error:
+
         raise HTTPException(
             status_code=500,
             detail=str(error)
         ) from error
 
     finally:
+
+        # Remove temporary uploaded audio
         if input_path.exists():
             input_path.unlink()
 
+        await file.close()
