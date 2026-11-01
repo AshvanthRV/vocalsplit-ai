@@ -1,25 +1,148 @@
-# Dependencies
+# ==========================================
+
+# Node.js
+
+# ==========================================
+
 node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
+# ==========================================
 
-# IDE
+# Build outputs
+
+# ==========================================
+
+dist/
+build/
+out/
+.next/
+.vite/
+coverage/
+
+# ==========================================
+
+# Environment variables and secrets
+
+# ==========================================
+
+.env
+.env.*
+!.env.example
+
+# ==========================================
+
+# Python
+
+# ==========================================
+
+**pycache**/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+
+venv/
+.venv/
+env/
+ENV/
+
+# Python packaging
+
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Python testing and tools
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# ==========================================
+
+# Audio processing outputs
+
+# ==========================================
+
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+*.aiff
+
+# Temporary processing files
+
+temp/
+tmp/
+uploads/
+outputs/
+processed/
+separated/
+
+# ==========================================
+
+# IDE and editors
+
+# ==========================================
+
 .vscode/
 .idea/
+*.suo
+*.user
+*.swp
+*.swo
+
+# ==========================================
+
+# Operating system
+
+# ==========================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+
+# Logs
+
+# ==========================================
+
+*.log
+logs/
+
+# ==========================================
+
+# Cache
+
+# ==========================================
+
+.cache/
+.parcel-cache/
+.turbo/
+
+# ==========================================
+
+# Database files
+
+# ==========================================
+
+*.sqlite
+*.sqlite3
+*.db
